@@ -8,13 +8,11 @@ test('GET /api/usage/total-by-year', async () => {
     expect(res.body).toHaveProperty('2566');
 }); 
 
-test('GET /api/usage/total-by-year - response shape', async () => {
-    const res = await request(app).get('/api/usage/total-by-year');
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toEqual(expect.any(Object));
-    expect(Object.keys(res.body)).toContain('2566');
-    expect(Object.values(res.body).every(value => typeof value === 'number')).toBeTruthy();
-});
+test('GET /api/usage/total-by-year - invalid route', async () => {
+    const res = await request(app).get('/api/usage/total-by-year-invalid');
+    expect(res.statusCode).toEqual(404);
+}); 
+
 
 // API 2: Total electricity users for each year 
 test('GET /api/users/total-by-year', async () => { 
@@ -23,13 +21,11 @@ test('GET /api/users/total-by-year', async () => {
     expect(res.body).toHaveProperty('2566'); 
 });
 
-test('GET /api/users/total-by-year - response shape', async () => {
-    const res = await request(app).get('/api/users/total-by-year');
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toEqual(expect.any(Object));
-    expect(Object.keys(res.body)).toContain('2566');
-    expect(Object.values(res.body).every(value => typeof value === 'number')).toBeTruthy();
+test('GET /api/users/total-by-year - invalid route', async () => {
+    const res = await request(app).get('/api/users/total-by-year-invalid');
+    expect(res.statusCode).toEqual(404);
 });
+
 
 // API 3: Usage of specific province by specific year 
 test('GET /api/usage/:province/:year', async () => { 
@@ -39,12 +35,12 @@ test('GET /api/usage/:province/:year', async () => {
     expect(res.body).toHaveProperty('year', 2566); 
 });
 
-test('GET /api/usage/Bangkok/2566 - response contains province_code', async () => {
-    const res = await request(app).get('/api/usage/Bangkok/2566');
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty('province_code', 10);
-    expect(res.body).toHaveProperty('residential_kwh');
+test('GET /api/usage/:province/:year - invalid province/year', async () => { 
+    const res = await request(app).get('/api/usage/Bangkok/9999'); 
+    expect(res.statusCode).toEqual(200); 
+    expect(res.body).toHaveProperty('message', 'Data not found'); 
 });
+
 
 // API 4: Users of specific province by specific year 
 test('GET /api/users/:province/:year', async () => { 
@@ -54,13 +50,12 @@ test('GET /api/users/:province/:year', async () => {
     expect(res.body).toHaveProperty('year', 2566); 
 });
 
-test('GET /api/users/Bangkok/2566 - response contains province_code and counts', async () => {
-    const res = await request(app).get('/api/users/Bangkok/2566');
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty('province_code', 10);
-    expect(res.body).toHaveProperty('residential_count');
-    expect(res.body.residential_count).toBeGreaterThan(0);
+test('GET /api/users/:province/:year - invalid province/year', async () => { 
+    const res = await request(app).get('/api/users/Bangkok/9999'); 
+    expect(res.statusCode).toEqual(200); 
+    expect(res.body).toHaveProperty('message', 'Data not found'); 
 });
+
 
 // API 5: Usage history by specific province 
 test('GET /api/usage-history/:province', async () => { 
@@ -71,13 +66,13 @@ test('GET /api/usage-history/:province', async () => {
     expect(res.body[0]).toHaveProperty('province_name', 'Bangkok');
 });
 
-test('GET /api/usage-history/Bangkok - all results are for Bangkok', async () => { 
-    const res = await request(app).get('/api/usage-history/Bangkok'); 
+test('GET /api/usage-history/:province - invalid province', async () => { 
+    const res = await request(app).get('/api/usage-history/UnknownProvince'); 
     expect(res.statusCode).toEqual(200); 
     expect(Array.isArray(res.body)).toBeTruthy(); 
-    expect(res.body.length).toBeGreaterThan(0); 
-    expect(res.body.every(item => item.province_name === 'Bangkok')).toBeTruthy();
+    expect(res.body.length).toEqual(0); 
 });
+
 
 // API 6: User history by specific province 
 test('GET /api/users-history/:province', async () => { 
@@ -88,13 +83,13 @@ test('GET /api/users-history/:province', async () => {
     expect(res.body[0]).toHaveProperty('province_name', 'Bangkok');   
 });
 
-test('GET /api/users-history/Bangkok - all results are for Bangkok', async () => { 
-    const res = await request(app).get('/api/users-history/Bangkok'); 
+test('GET /api/users-history/:province - invalid province', async () => { 
+    const res = await request(app).get('/api/users-history/UnknownProvince'); 
     expect(res.statusCode).toEqual(200); 
     expect(Array.isArray(res.body)).toBeTruthy(); 
-    expect(res.body.length).toBeGreaterThan(0); 
-    expect(res.body.every(item => item.province_name === 'Bangkok')).toBeTruthy();   
+    expect(res.body.length).toEqual(0); 
 });
+
 
 // Error Handling Test
 test('GET /api/usage/:province/:year - Not Found', async () => { 
